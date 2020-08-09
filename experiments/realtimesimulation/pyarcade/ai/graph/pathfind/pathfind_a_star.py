@@ -11,10 +11,10 @@ from math import sqrt, pow
 
 class PathfindAStar:
 
-    def find_path(self, graph:Graph, start:Node, end:Node):
+    def find_path(self, graph: Graph, start: Node, end: Node):
 
         NodeRecord = namedtuple('NodeRecord', ['node', 'connection', 'cost_so_far', 'estimated_total_cost'])
-        current:NodeRecord
+        current: NodeRecord
         connections: List[GraphConnection]
 
         start_record = NodeRecord()
@@ -25,7 +25,7 @@ class PathfindAStar:
 
         open = OrderedDict(int, NodeRecord)
         open.add(start_record.estimated_total_cost, start_record)
-        closed = [None]
+        closed = OrderedDict(int, NodeRecord)
 
         while len(open) > 0:
             current = open.pop()
@@ -37,6 +37,14 @@ class PathfindAStar:
 
             for connection in connections:
                 end_node = connection.to_node
+                end_node_cost = current.cost_so_far + connection.get_cost()
+
+                if closed.__contains__(end_node):
+                    end_node_record = closed.
+
+                if end_node_record.cost_so_far <= end_node_cost
+                    continue
+
 
 
 
