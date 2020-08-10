@@ -8,3 +8,5 @@ heapq.heappush(open_list, (30, 4))
 heapq.heappush(open_list, (10, 5))
 
 print(open_list[0][1])
+
+nodes =[]
