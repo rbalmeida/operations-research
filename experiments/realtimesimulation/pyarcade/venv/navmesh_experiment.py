@@ -5,7 +5,7 @@ SCREEN_HEIGHT = 480
 
 class Graph:
     # nodes = [(1, 1), (20, 40), (30, 20), (50, 50), (100, 120)]
-    nodes = [(x, y) for x in range(50, SCREEN_WIDTH, 50) for y in range(50, SCREEN_HEIGHT, 50)]
+    nodes = [(x, y) for x in range(40, SCREEN_WIDTH, 50) for y in range(40, SCREEN_HEIGHT, 50)]
 
 class Ball:
 
@@ -46,16 +46,25 @@ class MyGame(arcade.Window):
 
     graph = Graph()
 
+    def setup(self):
+
+        for node in self.graph.nodes:
+            shape = arcade.create_ellipse(node[0], node[1], 10, 10, arcade.color.BLUE)
+            self.shape_list.append(shape)
+
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
+        self.shape_list = arcade.ShapeElementList()
         arcade.set_background_color(arcade.color.ASH_GREY)
         self.ball = Ball(50, 50, 3, 3, 15, arcade.color.RED)
+        self.setup()
 
     def on_draw(self):
         arcade.start_render()
+        for shape in self.shape_list:
+            shape.draw()
         self.ball.draw()
-        for node in self.graph.nodes:
-            arcade.draw_circle_filled(node[0], node[1], 10, arcade.color.BLUE)
+
 
     def update(self, delta_time):
         self.ball.update()
@@ -67,3 +76,6 @@ def main():
     arcade.run()
 
 main()
+
+# ref for fast draw
+# https://arcade.academy/examples/shapes_buffered.html
