@@ -6,16 +6,22 @@ from numpy.random import randint
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 960
 TILE_SIZE = 20
+TOTAL_AGENTS = 3
+
 
 class MyGame(arcade.Window):
 
     tiles = [(x, y) for x in range(0, SCREEN_WIDTH, TILE_SIZE) for y in range(0, SCREEN_HEIGHT, TILE_SIZE)]
     path_tiles = []
     not_navigable = []
+    navigable = []
 
-    agent_pos = (0, 0)
-    agent_step = 0
-    agent_direction = 1
+    collectable_pos = (0, 0)
+
+    agents_path = []
+
+    agents_pos = []
+    agents_step = [0 for i in range(0, TOTAL_AGENTS)]
 
     def setup(self):
 
@@ -25,24 +31,21 @@ class MyGame(arcade.Window):
         self.not_navigable += [(800, y) for y in range(780, 900, TILE_SIZE)]
         self.not_navigable += [(x, 900) for x in range(800, 1200, TILE_SIZE)]
 
+        self.navigable = [item for item in self.tiles if item not in self.not_navigable]
+
+        self.agents_pos = [self.navigable[randint(0, len(self.navigable) - 1)] for i in range(0, TOTAL_AGENTS)]
+
         for tile in self.tiles:
             shape = arcade.create_rectangle_outline(tile[0] + TILE_SIZE/2, tile[1] + TILE_SIZE/2, TILE_SIZE, TILE_SIZE, arcade.color.BLUE, 1)
             self.shape_list.append(shape)
 
-        #self.path_tiles = self.pathfind_astar((20, 60), (1000, 800))
-        self.path_tiles = self.pathfind_astar(self.tiles[randint(0, len(self.tiles) - 1)], self.tiles[randint(0, len(self.tiles) - 1)])
-        # self.path_tiles = self.pathfind_astar(self.tiles[5], self.tiles[4])
-        # for tile in self.path_tiles:
-        #     shape = arcade.create_rectangle_filled(tile[0] + TILE_SIZE / 2, tile[1] + TILE_SIZE / 2, TILE_SIZE,
-        #                                             TILE_SIZE, arcade.color.BLUE, 1)
-        #     self.shape_list.append(shape)
+        self.collectable_pos = self.navigable[randint(0, len(self.navigable) - 1)]
+        self.agents_path = [self.pathfind_astar(self.agents_pos[i], self.collectable_pos) for i in range(0, TOTAL_AGENTS)]
 
         for tile in self.not_navigable:
             shape = arcade.create_rectangle_filled(tile[0] + TILE_SIZE / 2, tile[1] + TILE_SIZE / 2, TILE_SIZE,
                                                    TILE_SIZE, arcade.color.BLACK, 1)
             self.shape_list.append(shape)
-
-
 
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
@@ -54,28 +57,31 @@ class MyGame(arcade.Window):
         arcade.start_render()
         for shape in self.shape_list:
             shape.draw()
-        if len(self.path_tiles) > self.agent_step:
-            self.agent_pos = self.path_tiles[self.agent_step]
-        if len(self.path_tiles) > 0:
-            arcade.draw_rectangle_filled(self.path_tiles[len(self.path_tiles) - 1][0] + TILE_SIZE/2, self.path_tiles[len(self.path_tiles) - 1][1] + TILE_SIZE/2, TILE_SIZE, TILE_SIZE, arcade.color.GREEN, 1)
-        arcade.draw_circle_filled(self.agent_pos[0] + TILE_SIZE/2, self.agent_pos[1] + TILE_SIZE/2, TILE_SIZE/2, arcade.color.RED)
 
+        arcade.draw_rectangle_filled(self.collectable_pos[0] + TILE_SIZE/2, self.collectable_pos[1] + TILE_SIZE/2, TILE_SIZE, TILE_SIZE, arcade.color.GREEN, 1)
 
+        for agent_idx in range(0, TOTAL_AGENTS):
+            agent_pos = self.agents_path[agent_idx][self.agents_step[agent_idx]]
+            arcade.draw_circle_filled(agent_pos[0] + TILE_SIZE/2, agent_pos[1] + TILE_SIZE/2, TILE_SIZE/2, arcade.color.BLUE)
 
     def update(self, delta_time):
-        if self.agent_step < len(self.path_tiles) - 1:
-            self.agent_step += 1
+
+        agent_got = False
+        for agent_idx in range(0, TOTAL_AGENTS):
+            if self.agents_path[agent_idx][self.agents_step[agent_idx]] == self.collectable_pos:
+                agent_got = True
+                break
+
+        if agent_got:
+            self.collectable_pos = self.navigable[randint(0, len(self.navigable) - 1)]
+            self.agents_pos = [self.navigable[randint(0, len(self.navigable) - 1)] for i in range(0, TOTAL_AGENTS)]
+            self.agents_path = [
+                self.pathfind_astar(self.agents_pos[agent_idx], self.collectable_pos) for agent_idx in
+                range(0, TOTAL_AGENTS)]
+            self.agents_step = [0 for i in range(0, TOTAL_AGENTS)]
         else:
-            # print("self.path_tiles")
-            # print(self.path_tiles)
-            self.path_tiles = self.pathfind_astar(self.path_tiles[len(self.path_tiles) - 1], self.tiles[randint(0, len(self.tiles) - 1)])
-            self.agent_step = 0
-        #     if self.agent_step > 0:
-        #         self.agent_step -= 1
-        #     else:
-        #         self.agent_direction = 1
-
-
+            for agent_idx in range(0, TOTAL_AGENTS):
+                self.agents_step[agent_idx] += 1
 
     def distance(self, from_tile, to_tile):
         return math.sqrt(math.pow(from_tile[0] - to_tile[0], 2) + math.pow(from_tile[1] - to_tile[1], 2))
@@ -118,12 +124,7 @@ class MyGame(arcade.Window):
 
         return path[::-1]
 
-
     def pathfind_astar(self, from_tile, to_tile):
-
-        # TODO refinar: parece que ainda não explorar os melhores caminhos, meio que
-        # segue por onde já estava indo
-        # ainda precisa de alguns refinamentos
 
         if from_tile == to_tile:
             path = [from_tile]
