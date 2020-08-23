@@ -29,7 +29,9 @@ class MyGame(arcade.Window):
         self.not_navigable += [(x, 600) for x in range(40, 800, TILE_SIZE)]
         self.not_navigable += [(x, 780) for x in range(800, 1200, TILE_SIZE)]
         self.not_navigable += [(800, y) for y in range(780, 900, TILE_SIZE)]
+        self.not_navigable += [(500, y) for y in range(0, 200, TILE_SIZE)]
         self.not_navigable += [(x, 900) for x in range(800, 1200, TILE_SIZE)]
+        self.not_navigable += [(x, 100) for x in range(900, 1200, TILE_SIZE)]
 
         self.navigable = [item for item in self.tiles if item not in self.not_navigable]
 
