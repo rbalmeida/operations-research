@@ -16,7 +16,9 @@ class EventManager:
         self.listeners.append(event_listener)
 
     def run(self):
-        for event in self.events:
+        events_copy = self.events.copy()
+        self.events.clear();
+        for event in events_copy:
             for listener in self.listeners:
                 listener.notify(event)
 
