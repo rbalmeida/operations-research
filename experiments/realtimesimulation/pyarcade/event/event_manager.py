@@ -19,6 +19,7 @@ class EventManager:
         events_copy = self.events.copy()
         self.events.clear();
         for event in events_copy:
+            
             for listener in self.listeners:
                 listener.notify(event)
 
